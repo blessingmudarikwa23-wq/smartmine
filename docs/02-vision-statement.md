@@ -1,46 +1,24 @@
-# SmartMine — Vision Statement
+# 👁️ Product Vision & Operational Identity: SmartMine
 
-## 1. Vision
-
-> To become a practical digital operations platform that empowers small-scale mining businesses to manage their daily operations with greater visibility, control, efficiency, and data-driven decision-making.
-
-SmartMine aims to bring simple, accessible digital technology into small-scale mining environments where operational activities are often managed through paper records, spreadsheets, manual calculations, verbal communication, and disconnected processes.
-
-The platform will provide a centralized operational view that helps mining businesses understand what is happening across their operations and make better decisions based on reliable operational data.
+| Document | Product Vision & Identity |
+| :--- | :--- |
+| **Version** | 1.0.0 |
+| **Status** | Approved / Phase 0 |
+| **Target Audience** | Product Team, Designers, Core Developers |
 
 ---
 
-## 2. Our Vision for the Small-Scale Mining Operation
+## 1. Product Statement
 
-SmartMine envisions a mining operation where important daily activities are digitally recorded from the moment material is extracted through the stages of transportation, crushing, grinding, processing, and mineral recovery.
-
-Instead of operational information being scattered across notebooks, spreadsheets, receipts, messages, and individual memory, SmartMine will provide a centralized source of operational information.
-
-The platform should allow an authorized user to understand the current state of the operation without having to manually collect information from different people or locations.
+> **For** small-scale mining operators and site managers  
+> **Who** need clear, real-time control over their daily site operations, material throughput, costs, and production outputs  
+> **SmartMine** is a lightweight, mobile-first Digital Operations Intelligence Platform  
+> **That** connects daily physical mining steps—from rock extraction to mineral recovery—into an integrated operational dashboard  
+> **Unlike** complex corporate ERPs or fragmented paper notebooks and WhatsApp chats  
+> **Our product** provides instant clarity on daily operational profitability, equipment health, and resource consumption without administrative bloat.
 
 ---
 
-## 3. From Extraction to Mineral Recovery
+## 2. Core Pillars of SmartMine
 
-SmartMine will be designed around the operational flow of small-scale mining.
-
-The initial conceptual workflow is:
-
-```text
-Extraction
-    ↓
-Material Transportation
-    ↓
-Crushing
-    ↓
-Grinding
-    ↓
-Processing
-    ↓
-Mineral Recovery
-    ↓
-Production Recording
-    ↓
-Operational Analysis
-    ↓
-Decision Making
+SmartMine is grounded on four key product pillars:
