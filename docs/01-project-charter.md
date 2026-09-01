@@ -203,9 +203,9 @@ These areas are preliminary and will be evaluated during the requirements-defini
 
 ## 11. Geographic Focus
 
-The initial product concept is focused on small-scale mining operations in South Africa.
+The initial product concept is focused on small-scale mining operations in Zimbabwe.
 
-The platform should therefore be designed with the operational realities and requirements of the South African small-scale mining environment in mind.
+The platform should therefore be designed with the operational realities and requirements of the Zimbabwean small-scale mining environment in mind.
 
 Specific regulatory, legal, environmental, health and safety requirements will be researched and documented separately before implementation.
 
