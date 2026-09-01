@@ -502,11 +502,11 @@ AI should support the operation rather than replace reliable operational data.
 
 ---
 
-## 13. South African and Small-Scale Mining Focus
+## 13. Zimbabwean  Small-Scale Mining Focus
 
-SmartMine's initial market focus is South Africa.
+SmartMine's initial market focus is Zimbabwe.
 
-The product should be informed by research into the South African small-scale and artisanal mining environment, including:
+The product should be informed by research into the Zimbabwean small-scale and artisanal mining environment, including:
 
 - Mining practices
 - Operational terminology
