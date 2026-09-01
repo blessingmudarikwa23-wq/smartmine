@@ -6,7 +6,7 @@
 **Document:** Product Vision  
 **Version:** 1.0  
 **Status:** Foundation Document  
-**Initial Market Focus:** South Africa  
+**Initial Market Focus:** Zimbabwe  
 
 ---
 
