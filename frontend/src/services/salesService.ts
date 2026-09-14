@@ -2,7 +2,7 @@ import axios from "axios";
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  "http://localhost:8001";
+  "https://smartmine-backend-wdva.onrender.com";
 
 const salesApi = axios.create({
   baseURL: `${API_URL}/api/v1/sales`,

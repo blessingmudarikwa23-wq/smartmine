@@ -124,7 +124,7 @@ type FuelRecordApiResponse = {
 // ============================================================
 
 const API_URL = (
-  import.meta.env.VITE_API_URL || "http://localhost:8001"
+  import.meta.env.VITE_API_URL || "https://smartmine-backend-wdva.onrender.com"
 ).replace(/\/$/, "");
 
 const FUEL_API_URL = `${API_URL}/api/fuel`;

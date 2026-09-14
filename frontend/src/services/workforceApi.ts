@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API_BASE_URL =
-  `${import.meta.env.VITE_API_URL || "http://127.0.0.1:8001"}/api/v1/workforce`;
+  `${import.meta.env.VITE_API_URL || "https://smartmine-backend-wdva.onrender.com"}/api/v1/workforce`;
 
 const workforceClient = axios.create({
   baseURL: API_BASE_URL,

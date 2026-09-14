@@ -1,4 +1,4 @@
-﻿import type { ProductionRecord } from "../../services/mineOperationsApi";
+import type { ProductionRecord } from "../../services/mineOperationsApi";
 import {
   CheckCircle2,
   Clock3,
