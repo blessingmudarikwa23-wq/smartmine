@@ -22,17 +22,12 @@ from backend.settings.router import router as settings_router
 from backend.workforce.router import router as workforce_router
 
 
-# ============================================================
-# APPLICATION LIFESPAN
-# ============================================================
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting SmartMine backend...")
 
     try:
         Base.metadata.create_all(bind=engine)
-
         logger.info("Database initialized successfully.")
 
     except Exception as exc:
@@ -48,10 +43,6 @@ async def lifespan(app: FastAPI):
 
     logger.info("SmartMine backend shutting down...")
 
-
-# ============================================================
-# FASTAPI APPLICATION
-# ============================================================
 
 app = FastAPI(
     title=settings.app_name,
@@ -75,6 +66,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         settings.frontend_url,
+        "https://smartmine-frontend.onrender.com",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:5174",
@@ -82,7 +74,7 @@ app.add_middleware(
         "http://localhost:5175",
         "http://127.0.0.1:5175",
     ],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -92,67 +84,55 @@ app.add_middleware(
 # API ROUTERS
 # ============================================================
 
-# Mine Operations
 app.include_router(
     mine_operations_router,
     prefix=settings.api_prefix,
 )
 
-# Dashboard
 app.include_router(
     dashboard_router,
     prefix=settings.api_prefix,
 )
 
-# Processing
 app.include_router(
     processing_router,
     prefix=settings.api_prefix,
 )
 
-# Equipment
 app.include_router(
     equipment_router,
     prefix="/api/v1",
 )
 
-# Workforce
 app.include_router(
     workforce_router,
     prefix="/api/v1",
 )
 
-# Inventory
 app.include_router(
     inventory_router,
 )
 
-# Fuel
 app.include_router(
     fuel_router,
 )
 
-# Safety
 app.include_router(
     safety_router,
 )
 
-# Reports
 app.include_router(
     reports_router,
 )
 
-# Sales
 app.include_router(
     sales_router,
 )
 
-# Smart Intelligence
 app.include_router(
     intelligence_router,
 )
 
-# Settings
 app.include_router(
     settings_router,
 )
@@ -181,9 +161,7 @@ def health():
 
     try:
         with engine.connect() as connection:
-            connection.execute(
-                text("SELECT 1")
-            )
+            connection.execute(text("SELECT 1"))
 
     except Exception as exc:
         logger.error(
