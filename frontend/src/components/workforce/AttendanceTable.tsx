@@ -5,7 +5,7 @@ import {
   UserX,
 } from "lucide-react";
 
-import type { Worker } from "../../pages/Workforce";
+import type { Worker } from "../../services/workforceApi";
 
 type AttendanceTableProps = {
   workers: Worker[];

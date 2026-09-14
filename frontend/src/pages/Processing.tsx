@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -86,7 +86,7 @@ const processingIssues = [
       "Processing water level should be checked before the next production cycle.",
     category: "Processing",
     priority: "Medium",
-    duration: "—",
+    duration: "â€”",
     icon: AlertTriangle,
   },
 ];
@@ -1038,7 +1038,7 @@ export default function Processing() {
 
         <div className="mt-5 flex flex-col gap-2 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            SmartMine Processing • {selectedPeriod} operational view
+            SmartMine Processing â€¢ {selectedPeriod} operational view
           </p>
 
           <div className="flex items-center gap-2">
@@ -1055,7 +1055,7 @@ export default function Processing() {
 
       {isModalOpen && (
         <RecordProcessingModal
-          record={selectedRecord}
+          record={selectedRecord ? { ...selectedRecord, notes: selectedRecord.notes ?? null, createdAt: selectedRecord.createdAt ?? '', updatedAt: selectedRecord.updatedAt ?? '' } : null}
           onClose={() => {
             setIsModalOpen(false);
             setSelectedRecord(null);
@@ -1066,3 +1066,6 @@ export default function Processing() {
     </div>
   );
 }
+
+
+

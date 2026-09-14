@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 
-import type { Worker } from "../../pages/Workforce";
+import type { Worker } from "../../services/workforceApi";
 
 type ShiftRosterProps = {
   workers: Worker[];
@@ -253,7 +253,7 @@ function ShiftDetailsModal({
     if (!onUpdateWorkerShift) return;
     const workerId = worker.id || worker.employeeNumber;
     const nextShift = worker.shift === title ? "Off Duty" : title;
-    onUpdateWorkerShift(workerId, nextShift);
+    onUpdateWorkerShift(String(workerId), nextShift);
   };
 
   const shiftWorkers = allWorkers.filter((w) => w.shift === title);
@@ -381,3 +381,4 @@ function ShiftDetailsModal({
     </div>
   );
 }
+

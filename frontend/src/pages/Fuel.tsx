@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { ReactElement } from "react";
 import {
   Fuel as FuelIcon,
   Plus,
@@ -15,6 +16,7 @@ import FuelConsumptionTable from "../components/fuel/FuelConsumptionTable";
 import FuelMovements from "../components/fuel/FuelMovements";
 import FuelAlerts from "../components/fuel/FuelAlerts";
 import RecordFuelModal from "../components/fuel/RecordFuelModal";
+
 
 // ============================================================
 // TYPES
@@ -200,7 +202,7 @@ const normalizeFuelStatus = (
 // COMPONENT
 // ============================================================
 
-function Fuel(): JSX.Element {
+function Fuel(): ReactElement {
   const [tanks, setTanks] = useState<FuelTank[]>([]);
   const [records, setRecords] = useState<FuelRecord[]>([]);
 

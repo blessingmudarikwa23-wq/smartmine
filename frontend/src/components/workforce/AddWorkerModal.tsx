@@ -1,4 +1,5 @@
-import React, { FormEvent, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import {
   BriefcaseBusiness,
   CalendarDays,
@@ -9,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 
-import type { Worker } from "../../pages/Workforce";
+import type { Worker } from "../../services/workforceApi";
 
 type AddWorkerModalProps = {
   open?: boolean;

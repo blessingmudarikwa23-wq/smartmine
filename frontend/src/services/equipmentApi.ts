@@ -20,11 +20,11 @@ equipmentClient.interceptors.response.use(
 
     console.error(
       `Equipment API error ${status || ""}:`,
-      detail || error.message
+      detail || error.message,
     );
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export type EquipmentStatus =
@@ -108,9 +108,7 @@ export interface EquipmentDashboard {
   summary: EquipmentSummary;
 }
 
-function mapEquipment(
-  item: any
-): EquipmentRecord {
+function mapEquipment(item: any): EquipmentRecord {
   return {
     id: item.id,
     equipmentId: item.equipment_id,
@@ -124,27 +122,22 @@ function mapEquipment(
     utilisation: item.utilisation,
     lastMaintenance: item.last_maintenance,
     nextMaintenance: item.next_maintenance,
-    maintenanceInterval:
-      item.maintenance_interval,
+    maintenanceInterval: item.maintenance_interval,
     notes: item.notes,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
   };
 }
 
-function mapSummary(
-  item: any
-): EquipmentSummary {
+function mapSummary(item: any): EquipmentSummary {
   return {
     totalEquipment: item.total_equipment,
     running: item.running,
     available: item.available,
     maintenance: item.maintenance,
     down: item.down,
-    averageUtilisation:
-      item.average_utilisation,
-    totalOperatingHours:
-      item.total_operating_hours,
+    averageUtilisation: item.average_utilisation,
+    totalOperatingHours: item.total_operating_hours,
   };
 }
 
@@ -153,11 +146,8 @@ export const equipmentApi = {
     search?: string,
     status?: EquipmentStatus,
     type?: string,
-    location?: string
+    location?: string,
   ): Promise<EquipmentRecord[]> => {
-    const response =
-      await equipmentClient.get("");
-
     const params = {
       search,
       status,
@@ -165,154 +155,144 @@ export const equipmentApi = {
       location,
     };
 
-    const filteredResponse =
-      await equipmentClient.get("", {
-        params,
-      });
+    const response = await equipmentClient.get("", {
+      params,
+    });
 
-    return filteredResponse.data.map(
-      mapEquipment
-    );
+    return response.data.map(mapEquipment);
   },
 
   getEquipmentById: async (
-    id: number
+    id: number,
   ): Promise<EquipmentRecord> => {
-    const response =
-      await equipmentClient.get(`/${id}`);
+    const response = await equipmentClient.get(`/${id}`);
 
     return mapEquipment(response.data);
   },
 
   getEquipmentByCode: async (
-    equipmentCode: string
+    equipmentCode: string,
   ): Promise<EquipmentRecord> => {
-    const response =
-      await equipmentClient.get(
-        `/code/${equipmentCode}`
-      );
+    const response = await equipmentClient.get(
+      `/code/${equipmentCode}`,
+    );
 
     return mapEquipment(response.data);
   },
 
   createEquipment: async (
-    data: EquipmentCreate
+    data: EquipmentCreate,
   ): Promise<EquipmentRecord> => {
-    const response =
-      await equipmentClient.post("", {
-        equipment_id: data.equipmentId,
-        name: data.name,
-        type: data.type,
-        manufacturer: data.manufacturer,
-        model: data.model,
-        location: data.location,
-        status: data.status,
-        operating_hours: data.operatingHours,
-        utilisation: data.utilisation,
-        last_maintenance:
-          data.lastMaintenance || null,
-        next_maintenance:
-          data.nextMaintenance || null,
-        maintenance_interval:
-          data.maintenanceInterval,
-        notes: data.notes || null,
-      });
+    const response = await equipmentClient.post("", {
+      equipment_id: data.equipmentId,
+      name: data.name,
+      type: data.type,
+      manufacturer: data.manufacturer,
+      model: data.model,
+      location: data.location,
+      status: data.status,
+      operating_hours: data.operatingHours,
+      utilisation: data.utilisation,
+      last_maintenance: data.lastMaintenance || null,
+      next_maintenance: data.nextMaintenance || null,
+      maintenance_interval: data.maintenanceInterval,
+      notes: data.notes || null,
+    });
 
     return mapEquipment(response.data);
   },
 
   updateEquipment: async (
     id: number,
-    data: EquipmentUpdate
+    data: EquipmentUpdate,
   ): Promise<EquipmentRecord> => {
     const payload: Record<string, unknown> = {};
 
-    if (data.equipmentId !== undefined)
-      payload.equipment_id =
-        data.equipmentId;
+    if (data.equipmentId !== undefined) {
+      payload.equipment_id = data.equipmentId;
+    }
 
-    if (data.name !== undefined)
+    if (data.name !== undefined) {
       payload.name = data.name;
+    }
 
-    if (data.type !== undefined)
+    if (data.type !== undefined) {
       payload.type = data.type;
+    }
 
-    if (data.manufacturer !== undefined)
-      payload.manufacturer =
-        data.manufacturer;
+    if (data.manufacturer !== undefined) {
+      payload.manufacturer = data.manufacturer;
+    }
 
-    if (data.model !== undefined)
+    if (data.model !== undefined) {
       payload.model = data.model;
+    }
 
-    if (data.location !== undefined)
+    if (data.location !== undefined) {
       payload.location = data.location;
+    }
 
-    if (data.status !== undefined)
+    if (data.status !== undefined) {
       payload.status = data.status;
+    }
 
-    if (data.operatingHours !== undefined)
-      payload.operating_hours =
-        data.operatingHours;
+    if (data.operatingHours !== undefined) {
+      payload.operating_hours = data.operatingHours;
+    }
 
-    if (data.utilisation !== undefined)
-      payload.utilisation =
-        data.utilisation;
+    if (data.utilisation !== undefined) {
+      payload.utilisation = data.utilisation;
+    }
 
-    if (data.lastMaintenance !== undefined)
-      payload.last_maintenance =
-        data.lastMaintenance;
+    if (data.lastMaintenance !== undefined) {
+      payload.last_maintenance = data.lastMaintenance;
+    }
 
-    if (data.nextMaintenance !== undefined)
-      payload.next_maintenance =
-        data.nextMaintenance;
+    if (data.nextMaintenance !== undefined) {
+      payload.next_maintenance = data.nextMaintenance;
+    }
 
-    if (
-      data.maintenanceInterval !==
-      undefined
-    )
+    if (data.maintenanceInterval !== undefined) {
       payload.maintenance_interval =
         data.maintenanceInterval;
+    }
 
-    if (data.notes !== undefined)
+    if (data.notes !== undefined) {
       payload.notes = data.notes;
+    }
 
-    const response =
-      await equipmentClient.put(
-        `/${id}`,
-        payload
-      );
+    const response = await equipmentClient.put(
+      `/${id}`,
+      payload,
+    );
 
     return mapEquipment(response.data);
   },
 
   updateStatus: async (
     equipmentCode: string,
-    status: EquipmentStatus
+    status: EquipmentStatus,
   ): Promise<EquipmentRecord> => {
-    const response =
-      await equipmentClient.put(
-        `/status/${equipmentCode}`,
-        {
-          status,
-        }
-      );
+    const response = await equipmentClient.put(
+      `/status/${equipmentCode}`,
+      {
+        status,
+      },
+    );
 
     return mapEquipment(response.data);
   },
 
   deleteEquipment: async (
-    id: number
+    id: number,
   ): Promise<void> => {
-    await equipmentClient.delete(
-      `/${id}`
-    );
+    await equipmentClient.delete(`/${id}`);
   },
 
   getSummary: async (): Promise<EquipmentSummary> => {
-    const response =
-      await equipmentClient.get(
-        "/summary"
-      );
+    const response = await equipmentClient.get(
+      "/summary",
+    );
 
     return mapSummary(response.data);
   },
@@ -320,39 +300,31 @@ export const equipmentApi = {
   getStatus: async (): Promise<
     EquipmentStatusRecord[]
   > => {
-    const response =
-      await equipmentClient.get(
-        "/status"
-      );
-
-    return response.data.map(
-      (item: any) => ({
-        equipmentId:
-          item.equipment_id,
-        name: item.name,
-        status: item.status,
-        location: item.location,
-        operatingHours:
-          item.operating_hours,
-        utilisation:
-          item.utilisation,
-      })
+    const response = await equipmentClient.get(
+      "/status",
     );
+
+    return response.data.map((item: any) => ({
+      equipmentId: item.equipment_id,
+      name: item.name,
+      status: item.status,
+      location: item.location,
+      operatingHours: item.operating_hours,
+      utilisation: item.utilisation,
+    }));
   },
 
   getDashboard: async (): Promise<EquipmentDashboard> => {
-    const response =
-      await equipmentClient.get(
-        "/dashboard"
-      );
+    const response = await equipmentClient.get(
+      "/dashboard",
+    );
 
     return {
-      equipment:
-        response.data.equipment.map(
-          mapEquipment
-        ),
+      equipment: response.data.equipment.map(
+        mapEquipment,
+      ),
       summary: mapSummary(
-        response.data.summary
+        response.data.summary,
       ),
     };
   },
@@ -360,14 +332,11 @@ export const equipmentApi = {
   getUpcomingMaintenance: async (): Promise<
     EquipmentRecord[]
   > => {
-    const response =
-      await equipmentClient.get(
-        "/maintenance/upcoming"
-      );
-
-    return response.data.map(
-      mapEquipment
+    const response = await equipmentClient.get(
+      "/maintenance/upcoming",
     );
+
+    return response.data.map(mapEquipment);
   },
 };
 

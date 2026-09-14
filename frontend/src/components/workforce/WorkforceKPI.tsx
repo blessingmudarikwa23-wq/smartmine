@@ -8,7 +8,7 @@ import type { LucideIcon } from "lucide-react";
 
 type WorkforceKPIProps = {
   title: string;
-  value: string;
+  value: string | number;
   description: string;
   change: string;
   trend: "up" | "down" | "neutral";

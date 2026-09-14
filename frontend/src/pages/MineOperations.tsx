@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   Activity,
@@ -26,6 +26,7 @@ import ProductionChart from "../components/mine-operations/ProductionChart";
 import ProductionTable from "../components/mine-operations/ProductionTable";
 import RecordProductionModal from "../components/mine-operations/RecordProductionModal";
 import ShiftCard from "../components/mine-operations/ShiftCard";
+import { AlertCircle } from "lucide-react";
 
 import {
   createMineShift,
@@ -1188,9 +1189,14 @@ function MineOperations() {
               </div>
             </div>
           </div>
-
-          <OperationalIssues issues={operationalIssues} />
         </section>
+
+          <OperationalIssues
+  issues={operationalIssues.map((issue) => ({
+    ...issue,
+    icon: AlertCircle,
+  }))}
+ />
 
         {/* ======================================================
             PRODUCTION TABLE
@@ -1765,3 +1771,6 @@ function MineOperations() {
 }
 
 export default MineOperations;
+
+
+

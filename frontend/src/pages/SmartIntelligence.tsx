@@ -322,7 +322,7 @@ function SmartIntelligence() {
         IntelligenceMessage = {
         id: Date.now() + 1,
         role: "assistant",
-        content: response.answer,
+        content: response,
         timestamp:
           new Date().toLocaleTimeString(
             [],
@@ -624,3 +624,4 @@ function SmartIntelligence() {
 }
 
 export default SmartIntelligence;
+

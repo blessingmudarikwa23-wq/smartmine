@@ -1,6 +1,6 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { AlertTriangle, CheckCircle, ShieldAlert } from "lucide-react";
-import type { Worker } from "../services/workforceApi";
+import type { Worker } from "../../services/workforceApi";
 
 export interface WorkforceIssueItem {
   id: string;

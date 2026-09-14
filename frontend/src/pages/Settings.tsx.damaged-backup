@@ -200,6 +200,35 @@ export default function Settings() {
 
   /*
   |--------------------------------------------------------------------------
+  | Currency Helpers
+  |--------------------------------------------------------------------------
+  */
+return option?.label ?? currency;
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Currency Symbol
+  |--------------------------------------------------------------------------
+  */
+
+  const getCurrencySymbol = (
+    currency: string,
+  ): string => {
+    switch (currency) {
+      case "ZAR":
+        return "R";
+
+      case "USD":
+        return "$";
+
+      default:
+        return currency;
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
   | Date & Time
   |--------------------------------------------------------------------------
   */
@@ -319,6 +348,7 @@ export default function Settings() {
 
   return (
     <div className="min-h-full bg-slate-50">
+      {/* Page Header */}
       <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div>
           <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#d8a83e]">
@@ -356,6 +386,7 @@ export default function Settings() {
         </button>
       </div>
 
+      {/* Loading State */}
       {loading && (
         <div className="mb-6 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-[#d8a83e]" />
@@ -366,6 +397,7 @@ export default function Settings() {
         </div>
       )}
 
+      {/* Error State */}
       {error && (
         <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
           <div>
@@ -388,6 +420,7 @@ export default function Settings() {
         </div>
       )}
 
+      {/* Live Date & Time */}
       <div className="mb-6 grid gap-4 md:grid-cols-2">
         <div className="relative overflow-hidden rounded-2xl bg-[#10251f] p-6 text-white shadow-lg">
           <div className="absolute -right-12 -top-12 h-36 w-36 rounded-full bg-[#d8a83e]/10" />
@@ -439,7 +472,9 @@ export default function Settings() {
         </div>
       </div>
 
+      {/* Settings Layout */}
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        {/* Settings Navigation */}
         <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
           <div className="px-3 pb-3 pt-2">
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
@@ -503,6 +538,7 @@ export default function Settings() {
             })}
           </div>
 
+          {/* System Status */}
           <div className="mt-4 rounded-xl bg-slate-50 p-4">
             <div className="mb-3 flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
@@ -527,6 +563,7 @@ export default function Settings() {
           </div>
         </aside>
 
+        {/* Main Settings */}
         <main>
           {activeSection === "General" && (
             <GeneralSettings
@@ -583,29 +620,17 @@ function GeneralSettings({
   settings: ApiSettings;
   setSettings: Dispatch<SetStateAction<ApiSettings>>;
 }) {
-  const getCurrencySymbol = (
-    currency: string,
-  ): string => {
+  const getCurrencySymbol = (currency: string): string => {
     switch (currency) {
       case "ZAR":
         return "R";
-
       case "USD":
         return "$";
-
       default:
         return currency;
     }
   };
-
-  const getCurrencyLabel = (
-    currency: string,
-  ): string => {
-    const option = CURRENCY_OPTIONS.find(
-      (item) => item.value === currency,
-    );
-
-    return option?.label ?? currency;
+return option?.label ?? currency;
   };
 
   return (
@@ -1066,26 +1091,17 @@ function SystemSettings({
     });
   };
 
-  const getTimezoneLabel = (
-    timezone: string,
-  ): string => {
-    const option = TIMEZONE_OPTIONS.find(
-      (item) => item.value === timezone,
-    );
-
+  const getTimezoneLabel = (timezone: string): string => {
+    const option = TIMEZONE_OPTIONS.find((item) => item.value === timezone);
     return option?.label ?? timezone;
   };
 
-  const getCurrencySymbol = (
-    currency: string,
-  ): string => {
+  const getCurrencySymbol = (currency: string): string => {
     switch (currency) {
       case "ZAR":
         return "R";
-
       case "USD":
         return "$";
-
       default:
         return currency;
     }
@@ -1242,9 +1258,7 @@ function AboutSmartMine() {
                 <Check size={14} />
               </div>
 
-              <span className="text-xs font-semibold">
-                {mod}
-              </span>
+              <span className="text-xs font-semibold">{mod}</span>
             </div>
           ))}
         </div>
@@ -1276,13 +1290,8 @@ function SettingsCard({
         </div>
 
         <div>
-          <h2 className="text-lg font-bold text-[#10251f]">
-            {title}
-          </h2>
-
-          <p className="mt-0.5 text-xs text-slate-500">
-            {description}
-          </p>
+          <h2 className="text-lg font-bold text-[#10251f]">{title}</h2>
+          <p className="mt-0.5 text-xs text-slate-500">{description}</p>
         </div>
       </div>
 
@@ -1340,10 +1349,7 @@ function SelectField({
           className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 pl-3 pr-10 text-sm font-medium text-slate-700 outline-none transition focus:border-[#d8a83e] focus:bg-white"
         >
           {options.map((option) => (
-            <option
-              key={option.value}
-              value={option.value}
-            >
+            <option key={option.value} value={option.value}>
               {option.label}
             </option>
           ))}
@@ -1372,29 +1378,20 @@ function ToggleRow({
   return (
     <div className="flex items-center justify-between gap-4 py-3">
       <div>
-        <p className="text-sm font-semibold text-[#10251f]">
-          {title}
-        </p>
-
-        <p className="mt-0.5 text-xs text-slate-500">
-          {description}
-        </p>
+        <p className="text-sm font-semibold text-[#10251f]">{title}</p>
+        <p className="mt-0.5 text-xs text-slate-500">{description}</p>
       </div>
 
       <button
         type="button"
         onClick={() => onChange(!enabled)}
         className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-          enabled
-            ? "bg-[#10251f]"
-            : "bg-slate-200"
+          enabled ? "bg-[#10251f]" : "bg-slate-200"
         }`}
       >
         <span
           className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-            enabled
-              ? "translate-x-5"
-              : "translate-x-0"
+            enabled ? "translate-x-5" : "translate-x-0"
           }`}
         />
       </button>
@@ -1415,9 +1412,8 @@ function SystemMetric({
         {label}
       </p>
 
-      <p className="mt-1 text-sm font-bold text-[#10251f]">
-        {value}
-      </p>
+      <p className="mt-1 text-sm font-bold text-[#10251f]">{value}</p>
     </div>
   );
 }
+

@@ -1,5 +1,4 @@
-﻿import type { ProductionRecord } from "../../services/mineOperationsApi";
-import {
+﻿import {
   CheckCircle2,
   Clock3,
   MoreHorizontal,
@@ -200,6 +199,5 @@ function ProductionTable({
 }
 
 export default ProductionTable;
-
 
 

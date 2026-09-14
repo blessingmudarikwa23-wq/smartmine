@@ -14,36 +14,38 @@ import {
 import equipmentApi, {
   type EquipmentStatusRecord,
   type EquipmentStatus,
-} from "../services/equipmentApi";
+} from "../../services/equipmentApi";
+
+type StatusConfig = {
+  icon: typeof CheckCircle2;
+  className: string;
+};
+
+const STATUS_CONFIG: Record<EquipmentStatus, StatusConfig> = {
+  Running: {
+    icon: CheckCircle2,
+    className: "bg-emerald-50 text-emerald-700",
+  },
+  Available: {
+    icon: Clock3,
+    className: "bg-blue-50 text-blue-700",
+  },
+  Maintenance: {
+    icon: Wrench,
+    className: "bg-amber-50 text-amber-700",
+  },
+  Down: {
+    icon: XCircle,
+    className: "bg-red-50 text-red-700",
+  },
+};
 
 function StatusBadge({
   status,
 }: {
   status: EquipmentStatus;
 }) {
-  const config = {
-    Running: {
-      icon: CheckCircle2,
-      className:
-        "bg-emerald-50 text-emerald-700",
-    },
-  Available: {
-      icon: Clock3,
-      className:
-        "bg-blue-50 text-blue-700",
-    },
-    Maintenance: {
-      icon: Wrench,
-      className:
-        "bg-amber-50 text-amber-700",
-    },
-    Down: {
-      icon: XCircle,
-      className:
-        "bg-red-50 text-red-700",
-    },
-  }[status];
-
+  const config = STATUS_CONFIG[status];
   const Icon = config.icon;
 
   return (
@@ -60,35 +62,27 @@ export default function EquipmentStatus() {
   const [equipment, setEquipment] =
     useState<EquipmentStatusRecord[]>([]);
 
-  const [search, setSearch] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [refreshing, setRefreshing] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState("");
 
   const loadStatus = async () => {
     try {
       setError("");
 
-      const data =
-        await equipmentApi.getStatus();
+      const data = await equipmentApi.getStatus();
 
       setEquipment(data);
     } catch (err: any) {
       console.error(
         "Failed to load equipment status:",
-        err
+        err,
       );
 
       setError(
         err?.response?.data?.detail ||
-          "Unable to load equipment status."
+          "Unable to load equipment status.",
       );
     } finally {
       setLoading(false);
@@ -107,7 +101,7 @@ export default function EquipmentStatus() {
 
   const handleStatusChange = async (
     equipmentId: string,
-    status: EquipmentStatus
+    status: EquipmentStatus,
   ) => {
     try {
       setError("");
@@ -115,80 +109,72 @@ export default function EquipmentStatus() {
       const updated =
         await equipmentApi.updateStatus(
           equipmentId,
-          status
+          status,
         );
 
       setEquipment((current) =>
         current.map((item) =>
-          item.equipmentId ===
-          equipmentId
+          item.equipmentId === equipmentId
             ? {
                 ...item,
                 status: updated.status,
               }
-            : item
-        )
+            : item,
+        ),
       );
     } catch (err: any) {
       console.error(
         "Failed to update equipment status:",
-        err
+        err,
       );
 
       setError(
         err?.response?.data?.detail ||
-          "Unable to update equipment status."
+          "Unable to update equipment status.",
       );
     }
   };
 
-  const filteredEquipment =
-    useMemo(() => {
-      const query =
-        search.trim().toLowerCase();
+  const filteredEquipment = useMemo(() => {
+    const query = search.trim().toLowerCase();
 
-      if (!query) {
-        return equipment;
-      }
+    if (!query) {
+      return equipment;
+    }
 
-      return equipment.filter(
-        (item) =>
-          item.name
-            .toLowerCase()
-            .includes(query) ||
-          item.equipmentId
-            .toLowerCase()
-            .includes(query) ||
-          item.location
-            .toLowerCase()
-            .includes(query)
-      );
-    }, [equipment, search]);
+    return equipment.filter(
+      (item) =>
+        item.name.toLowerCase().includes(query) ||
+        item.equipmentId
+          .toLowerCase()
+          .includes(query) ||
+        item.location
+          .toLowerCase()
+          .includes(query),
+    );
+  }, [equipment, search]);
 
   const total = equipment.length;
 
   const running = equipment.filter(
-    (item) => item.status === "Running"
+    (item) => item.status === "Running",
   ).length;
 
   const available = equipment.filter(
-    (item) => item.status === "Available"
+    (item) => item.status === "Available",
   ).length;
 
   const maintenance = equipment.filter(
-    (item) =>
-      item.status === "Maintenance"
+    (item) => item.status === "Maintenance",
   ).length;
 
   const down = equipment.filter(
-    (item) => item.status === "Down"
+    (item) => item.status === "Down",
   ).length;
 
   return (
     <div className="min-h-screen bg-[#f5f7f8]">
       <div className="mx-auto max-w-[1600px] space-y-6">
-
-        {/* Hero */}
         <section className="overflow-hidden rounded-3xl bg-[#10251f] shadow-sm">
           <div className="relative px-5 py-7 sm:px-7 lg:px-9 lg:py-8">
             <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-[#d8a83e]/10 blur-3xl" />
@@ -224,9 +210,7 @@ export default function EquipmentStatus() {
                 <RefreshCw
                   size={17}
                   className={
-                    refreshing
-                      ? "animate-spin"
-                      : ""
+                    refreshing ? "animate-spin" : ""
                   }
                 />
                 Refresh
@@ -235,17 +219,14 @@ export default function EquipmentStatus() {
           </div>
         </section>
 
-        {/* Summary */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
             <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
               Total Equipment
             </p>
-
             <p className="mt-2 text-3xl font-bold text-[#10251f]">
               {total}
             </p>
-
             <p className="mt-1 text-xs text-slate-400">
               Registered equipment
             </p>
@@ -255,11 +236,9 @@ export default function EquipmentStatus() {
             <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
               Running
             </p>
-
             <p className="mt-2 text-3xl font-bold text-emerald-600">
               {running}
             </p>
-
             <p className="mt-1 text-xs text-slate-400">
               Currently operating
             </p>
@@ -269,11 +248,9 @@ export default function EquipmentStatus() {
             <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
               Available
             </p>
-
             <p className="mt-2 text-3xl font-bold text-blue-600">
               {available}
             </p>
-
             <p className="mt-1 text-xs text-slate-400">
               Ready for operation
             </p>
@@ -283,11 +260,9 @@ export default function EquipmentStatus() {
             <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
               Maintenance
             </p>
-
             <p className="mt-2 text-3xl font-bold text-amber-600">
               {maintenance}
             </p>
-
             <p className="mt-1 text-xs text-slate-400">
               Under service
             </p>
@@ -297,18 +272,15 @@ export default function EquipmentStatus() {
             <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
               Down
             </p>
-
             <p className="mt-2 text-3xl font-bold text-red-600">
               {down}
             </p>
-
             <p className="mt-1 text-xs text-slate-400">
               Currently unavailable
             </p>
           </div>
         </section>
 
-        {/* Table */}
         <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-100 p-5 sm:p-6">
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -331,9 +303,7 @@ export default function EquipmentStatus() {
                 <input
                   value={search}
                   onChange={(event) =>
-                    setSearch(
-                      event.target.value
-                    )
+                    setSearch(event.target.value)
                   }
                   placeholder="Search equipment..."
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-[#d8a83e] focus:bg-white"
@@ -377,23 +347,18 @@ export default function EquipmentStatus() {
                     <th className="px-5 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400">
                       Equipment
                     </th>
-
                     <th className="px-5 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400">
                       Location
                     </th>
-
                     <th className="px-5 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400">
                       Status
                     </th>
-
                     <th className="px-5 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400">
                       Operating Hours
                     </th>
-
                     <th className="px-5 py-4 text-left text-[11px] font-bold uppercase tracking-wider text-slate-400">
                       Utilisation
                     </th>
-
                     <th className="px-5 py-4 text-right text-[11px] font-bold uppercase tracking-wider text-slate-400">
                       Change Status
                     </th>
@@ -401,129 +366,107 @@ export default function EquipmentStatus() {
                 </thead>
 
                 <tbody>
-                  {filteredEquipment.map(
-                    (item) => (
-                      <tr
-                        key={
-                          item.equipmentId
-                        }
-                        className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60"
-                      >
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="rounded-xl bg-[#10251f]/5 p-2.5">
-                              <Truck
-                                size={18}
-                                className="text-[#10251f]"
-                              />
-                            </div>
-
-                            <div>
-                              <p className="font-semibold text-slate-800">
-                                {item.name}
-                              </p>
-
-                              <p className="mt-0.5 text-xs text-slate-400">
-                                {
-                                  item.equipmentId
-                                }
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-
-                        <td className="px-5 py-4 text-sm text-slate-600">
-                          {item.location}
-                        </td>
-
-                        <td className="px-5 py-4">
-                          <StatusBadge
-                            status={
-                              item.status
-                            }
-                          />
-                        </td>
-
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-2">
-                            <Clock3
-                              size={15}
-                              className="text-slate-400"
+                  {filteredEquipment.map((item) => (
+                    <tr
+                      key={item.equipmentId}
+                      className="border-b border-slate-100 last:border-0 hover:bg-slate-50/60"
+                    >
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="rounded-xl bg-[#10251f]/5 p-2.5">
+                            <Truck
+                              size={18}
+                              className="text-[#10251f]"
                             />
+                          </div>
 
-                            <span className="text-sm font-semibold text-slate-700">
-                              {item.operatingHours.toLocaleString()}{" "}
-                              h
+                          <div>
+                            <p className="font-semibold text-slate-800">
+                              {item.name}
+                            </p>
+
+                            <p className="mt-0.5 text-xs text-slate-400">
+                              {item.equipmentId}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-4 text-sm text-slate-600">
+                        {item.location}
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <StatusBadge status={item.status} />
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2">
+                          <Clock3
+                            size={15}
+                            className="text-slate-400"
+                          />
+
+                          <span className="text-sm font-semibold text-slate-700">
+                            {item.operatingHours.toLocaleString()} h
+                          </span>
+                        </div>
+                      </td>
+
+                      <td className="px-5 py-4">
+                        <div className="w-28">
+                          <div className="mb-1.5 flex justify-between">
+                            <span className="text-xs font-bold text-slate-700">
+                              {item.utilisation}%
                             </span>
                           </div>
-                        </td>
 
-                        <td className="px-5 py-4">
-                          <div className="w-28">
-                            <div className="mb-1.5 flex justify-between">
-                              <span className="text-xs font-bold text-slate-700">
-                                {
-                                  item.utilisation
-                                }
-                                %
-                              </span>
-                            </div>
-
-                            <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
-                              <div
-                                className="h-full rounded-full bg-[#d8a83e]"
-                                style={{
-                                  width: `${item.utilisation}%`,
-                                }}
-                              />
-                            </div>
+                          <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                            <div
+                              className="h-full rounded-full bg-[#d8a83e]"
+                              style={{
+                                width: `${item.utilisation}%`,
+                              }}
+                            />
                           </div>
-                        </td>
+                        </div>
+                      </td>
 
-                        <td className="px-5 py-4 text-right">
-                          <select
-                            value={
-                              item.status
-                            }
-                            onChange={(
-                              event
-                            ) =>
-                              void handleStatusChange(
-                                item.equipmentId,
-                                event.target
-                                  .value as EquipmentStatus
-                              )
-                            }
-                            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 outline-none transition hover:border-[#d8a83e] focus:border-[#d8a83e]"
-                            aria-label={`Change status for ${item.name}`}
-                          >
-                            <option value="Running">
-                              Running
-                            </option>
-
-                            <option value="Available">
-                              Available
-                            </option>
-
-                            <option value="Maintenance">
-                              Maintenance
-                            </option>
-
-                            <option value="Down">
-                              Down
-                            </option>
-                          </select>
-                        </td>
-                      </tr>
-                    )
-                  )}
+                      <td className="px-5 py-4 text-right">
+                        <select
+                          value={item.status}
+                          onChange={(event) =>
+                            void handleStatusChange(
+                              item.equipmentId,
+                              event.target
+                                .value as EquipmentStatus,
+                            )
+                          }
+                          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 outline-none transition hover:border-[#d8a83e] focus:border-[#d8a83e]"
+                          aria-label={`Change status for ${item.name}`}
+                        >
+                          <option value="Running">
+                            Running
+                          </option>
+                          <option value="Available">
+                            Available
+                          </option>
+                          <option value="Maintenance">
+                            Maintenance
+                          </option>
+                          <option value="Down">
+                            Down
+                          </option>
+                        </select>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           )}
         </section>
 
-        {/* Status notice */}
         <section className="rounded-2xl border border-[#d8a83e]/20 bg-[#10251f] p-6 shadow-sm">
           <div className="flex items-start gap-4">
             <div className="rounded-xl bg-[#d8a83e]/15 p-3">

@@ -1,4 +1,5 @@
-import { FormEvent, useState } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import {
   Boxes,
   CalendarDays,
@@ -18,7 +19,7 @@ type EditInventoryModalProps = {
     item: Omit<
       InventoryItem,
       "id" | "status" | "lastUpdated" | "icon"
-    >
+    >,
   ) => void;
   isSaving?: boolean;
 };
@@ -35,21 +36,25 @@ function EditInventoryModal({
   const [category, setCategory] = useState(item.category);
   const [location, setLocation] = useState(item.location);
   const [unit, setUnit] = useState(item.unit);
-  const [quantity, setQuantity] = useState(item.quantity.toString());
+  const [quantity, setQuantity] = useState(
+    item.quantity.toString(),
+  );
   const [minimumLevel, setMinimumLevel] = useState(
-    item.minimumLevel.toString()
+    item.minimumLevel.toString(),
   );
   const [reorderLevel, setReorderLevel] = useState(
-    item.reorderLevel.toString()
+    item.reorderLevel.toString(),
   );
   const [unitCost, setUnitCost] = useState(
-    item.unitCost.toString()
+    item.unitCost.toString(),
   );
   const [supplier, setSupplier] = useState(item.supplier);
 
   const [error, setError] = useState("");
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (
+    event: FormEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
 
     setError("");
@@ -82,7 +87,9 @@ function EditInventoryModal({
       !Number.isFinite(parsedQuantity) ||
       parsedQuantity < 0
     ) {
-      setError("Quantity must be a valid number greater than or equal to 0.");
+      setError(
+        "Quantity must be a valid number greater than or equal to 0.",
+      );
       return;
     }
 
@@ -91,7 +98,7 @@ function EditInventoryModal({
       parsedMinimumLevel < 0
     ) {
       setError(
-        "Minimum level must be a valid number greater than or equal to 0."
+        "Minimum level must be a valid number greater than or equal to 0.",
       );
       return;
     }
@@ -101,7 +108,7 @@ function EditInventoryModal({
       parsedReorderLevel < 0
     ) {
       setError(
-        "Reorder level must be a valid number greater than or equal to 0."
+        "Reorder level must be a valid number greater than or equal to 0.",
       );
       return;
     }
@@ -111,7 +118,7 @@ function EditInventoryModal({
       parsedUnitCost < 0
     ) {
       setError(
-        "Unit cost must be a valid number greater than or equal to 0."
+        "Unit cost must be a valid number greater than or equal to 0.",
       );
       return;
     }
@@ -133,7 +140,6 @@ function EditInventoryModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#10251f]/70 p-4 backdrop-blur-sm">
       <div className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
-        {/* HEADER */}
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5 sm:px-7">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#d8a83e]/15 text-[#10251f]">
@@ -162,7 +168,6 @@ function EditInventoryModal({
           </button>
         </div>
 
-        {/* FORM */}
         <form
           onSubmit={handleSubmit}
           className="overflow-y-auto px-6 py-6 sm:px-7"
@@ -174,7 +179,6 @@ function EditInventoryModal({
           )}
 
           <div className="grid gap-5 sm:grid-cols-2">
-            {/* ITEM CODE */}
             <div>
               <label
                 htmlFor="edit-inventory-code"
@@ -203,7 +207,6 @@ function EditInventoryModal({
               </div>
             </div>
 
-            {/* ITEM NAME */}
             <div>
               <label
                 htmlFor="edit-inventory-name"
@@ -225,7 +228,6 @@ function EditInventoryModal({
               />
             </div>
 
-            {/* CATEGORY */}
             <div>
               <label
                 htmlFor="edit-inventory-category"
@@ -267,7 +269,6 @@ function EditInventoryModal({
               </div>
             </div>
 
-            {/* LOCATION */}
             <div>
               <label
                 htmlFor="edit-inventory-location"
@@ -296,7 +297,6 @@ function EditInventoryModal({
               </div>
             </div>
 
-            {/* UNIT */}
             <div>
               <label
                 htmlFor="edit-inventory-unit"
@@ -318,7 +318,6 @@ function EditInventoryModal({
               />
             </div>
 
-            {/* QUANTITY */}
             <div>
               <label
                 htmlFor="edit-inventory-quantity"
@@ -341,7 +340,6 @@ function EditInventoryModal({
               />
             </div>
 
-            {/* MINIMUM LEVEL */}
             <div>
               <label
                 htmlFor="edit-inventory-minimum"
@@ -364,7 +362,6 @@ function EditInventoryModal({
               />
             </div>
 
-            {/* REORDER LEVEL */}
             <div>
               <label
                 htmlFor="edit-inventory-reorder"
@@ -387,7 +384,6 @@ function EditInventoryModal({
               />
             </div>
 
-            {/* UNIT COST */}
             <div>
               <label
                 htmlFor="edit-inventory-cost"
@@ -410,7 +406,6 @@ function EditInventoryModal({
               />
             </div>
 
-            {/* SUPPLIER */}
             <div>
               <label
                 htmlFor="edit-inventory-supplier"
@@ -440,7 +435,6 @@ function EditInventoryModal({
             </div>
           </div>
 
-          {/* INFORMATION */}
           <div className="mt-6 rounded-xl bg-slate-50 p-4">
             <div className="flex items-start gap-3">
               <CalendarDays
@@ -462,7 +456,6 @@ function EditInventoryModal({
             </div>
           </div>
 
-          {/* BUTTONS */}
           <div className="mt-7 flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
             <button
               type="button"

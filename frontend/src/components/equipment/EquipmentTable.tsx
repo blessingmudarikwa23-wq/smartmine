@@ -3,8 +3,6 @@ import {
   ChevronDown,
   CircleAlert,
   Clock3,
-  CircleGauge,
-  Settings2,
   Truck,
   Wrench,
   XCircle,

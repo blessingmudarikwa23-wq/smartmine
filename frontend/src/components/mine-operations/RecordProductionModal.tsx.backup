@@ -1,5 +1,4 @@
-import { useState } from "react";
-import type { ProductionRecord, ProductionRecordPayload, ProductionShift } from "../../services/mineOperationsApi";
+﻿import { useState } from "react";
 import type { FormEvent } from "react";
 import {
   CalendarDays,
@@ -11,9 +10,8 @@ import {
 } from "lucide-react";
 
 type RecordProductionModalProps = {
-  record?: ProductionRecord | null;
   onClose: () => void;
-  onSubmit: (payload: ProductionRecordPayload) => void | Promise<void>;
+  onSubmit: (payload: ProductionRecordPayload) => void;
 };
 
 function RecordProductionModal({
@@ -21,7 +19,7 @@ function RecordProductionModal({
   onSubmit,
 }: RecordProductionModalProps) {
   const [date, setDate] = useState("2026-09-03");
-  const [shift, setShift] = useState<ProductionShift>("Day Shift");
+  const [shift, setShift] = useState("Day Shift");
   const [extracted, setExtracted] = useState("");
   const [processed, setProcessed] = useState("");
   const [output, setOutput] = useState("");
@@ -224,7 +222,7 @@ function RecordProductionModal({
                     id="production-shift"
                     value={shift}
                     onChange={(event) =>
-                      setShift(event.target.value as ProductionShift)
+                      setShift(event.target.value)
                     }
                     className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-700 outline-none transition focus:border-[#d8a83e] focus:ring-2 focus:ring-[#d8a83e]/20"
                   >
@@ -475,8 +473,4 @@ function RecordProductionModal({
 }
 
 export default RecordProductionModal;
-
-
-
-
 
