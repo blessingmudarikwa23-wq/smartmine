@@ -1,0 +1,1430 @@
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import type {
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+} from "react";
+
+import {
+  Bell,
+  Building2,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Clock3,
+  Globe2,
+  HardHat,
+  Info,
+  LockKeyhole,
+  MonitorCog,
+  Save,
+  Settings as SettingsIcon,
+  ShieldCheck,
+  SlidersHorizontal,
+  UserRound,
+  Zap,
+} from "lucide-react";
+
+import {
+  defaultNotifications,
+  defaultSettings,
+  getSettings,
+  updateSettings,
+} from "../services/settingsApi";
+
+import type {
+  NotificationSettings as ApiNotificationSettings,
+  Settings as ApiSettings,
+} from "../services/settingsApi";
+
+type SettingSection =
+  | "General"
+  | "Mine"
+  | "Notifications"
+  | "Security"
+  | "System"
+  | "About";
+
+type SelectOption = {
+  label: string;
+  value: string;
+};
+
+const TIMEZONE_OPTIONS: SelectOption[] = [
+  {
+    label: "Johannesburg, South Africa",
+    value: "Africa/Johannesburg",
+  },
+  {
+    label: "Harare, Zimbabwe",
+    value: "Africa/Harare",
+  },
+];
+
+const CURRENCY_OPTIONS: SelectOption[] = [
+  {
+    label: "South African Rand (ZAR)",
+    value: "ZAR",
+  },
+  {
+    label: "US Dollar (USD)",
+    value: "USD",
+  },
+];
+
+export default function Settings() {
+  const [activeSection, setActiveSection] =
+    useState<SettingSection>("General");
+
+  const [currentTime, setCurrentTime] =
+    useState<Date>(new Date());
+
+  const [notifications, setNotifications] =
+    useState<ApiNotificationSettings>(
+      defaultNotifications,
+    );
+
+  const [settings, setSettings] =
+    useState<ApiSettings>(defaultSettings);
+
+  const [saved, setSaved] =
+    useState<boolean>(false);
+
+  const [loading, setLoading] =
+    useState<boolean>(true);
+
+  const [saving, setSaving] =
+    useState<boolean>(false);
+
+  const [error, setError] =
+    useState<string>("");
+
+  /*
+  |--------------------------------------------------------------------------
+  | Live Clock
+  |--------------------------------------------------------------------------
+  */
+
+  useEffect(() => {
+    const timer: number = window.setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Load Settings From Backend
+  |--------------------------------------------------------------------------
+  */
+
+  useEffect(() => {
+    let mounted: boolean = true;
+
+    const loadSettings = async (): Promise<void> => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getSettings();
+
+        if (!mounted) {
+          return;
+        }
+
+        setSettings(data.settings);
+        setNotifications(data.notifications);
+      } catch (err: unknown) {
+        if (!mounted) {
+          return;
+        }
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load settings.",
+        );
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadSettings();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Timezone Helpers
+  |--------------------------------------------------------------------------
+  */
+
+  const getTimezoneLabel = (
+    timezone: string,
+  ): string => {
+    const option = TIMEZONE_OPTIONS.find(
+      (item: SelectOption) =>
+        item.value === timezone,
+    );
+
+    return option?.label ?? timezone;
+  };
+
+  const getTimezoneShortLabel = (
+    timezone: string,
+  ): string => {
+    switch (timezone) {
+      case "Africa/Johannesburg":
+        return "South Africa Standard Time";
+
+      case "Africa/Harare":
+        return "Zimbabwe Standard Time";
+
+      default:
+        return timezone;
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Currency Helpers
+  |--------------------------------------------------------------------------
+  */
+
+  const getCurrencyLabel = (
+    currency: string,
+  ): string => {
+    const option = CURRENCY_OPTIONS.find(
+      (item: SelectOption) =>
+        item.value === currency,
+    );
+
+    return option?.label ?? currency;
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Currency Symbol
+  |--------------------------------------------------------------------------
+  */
+
+  const getCurrencySymbol = (
+    currency: string,
+  ): string => {
+    switch (currency) {
+      case "ZAR":
+        return "R";
+
+      case "USD":
+        return "$";
+
+      default:
+        return currency;
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Date & Time
+  |--------------------------------------------------------------------------
+  */
+
+  const formatTime = (): string => {
+    try {
+      return new Intl.DateTimeFormat("en-ZA", {
+        timeZone: settings.timezone,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(currentTime);
+    } catch {
+      return new Intl.DateTimeFormat("en-ZA", {
+        timeZone: "Africa/Johannesburg",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).format(currentTime);
+    }
+  };
+
+  const formatDate = (): string => {
+    try {
+      return new Intl.DateTimeFormat("en-ZA", {
+        timeZone: settings.timezone,
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }).format(currentTime);
+    } catch {
+      return new Intl.DateTimeFormat("en-ZA", {
+        timeZone: "Africa/Johannesburg",
+        weekday: "long",
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }).format(currentTime);
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Save Settings
+  |--------------------------------------------------------------------------
+  */
+
+  const handleSave = async (): Promise<void> => {
+    try {
+      setSaving(true);
+      setSaved(false);
+      setError("");
+
+      const data = await updateSettings(
+        settings,
+        notifications,
+      );
+
+      setSettings(data.settings);
+      setNotifications(data.notifications);
+
+      setSaved(true);
+
+      window.setTimeout(() => {
+        setSaved(false);
+      }, 2500);
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to save settings.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const sections: Array<{
+    label: SettingSection;
+    description: string;
+    icon: typeof SlidersHorizontal;
+  }> = [
+    {
+      label: "General",
+      description: "Application preferences",
+      icon: SlidersHorizontal,
+    },
+    {
+      label: "Mine",
+      description: "Mine information",
+      icon: Building2,
+    },
+    {
+      label: "Notifications",
+      description: "Alerts and updates",
+      icon: Bell,
+    },
+    {
+      label: "Security",
+      description: "Account protection",
+      icon: ShieldCheck,
+    },
+    {
+      label: "System",
+      description: "System configuration",
+      icon: MonitorCog,
+    },
+    {
+      label: "About",
+      description: "About SmartMine",
+      icon: Info,
+    },
+  ];
+
+  return (
+    <div className="min-h-full bg-slate-50">
+      {/* Page Header */}
+      <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#d8a83e]">
+            <SettingsIcon size={16} />
+            System Configuration
+          </div>
+
+          <h1 className="text-2xl font-bold tracking-tight text-[#10251f]">
+            Settings
+          </h1>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Configure SmartMine to match your mine&apos;s
+            operational requirements.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving || loading}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#10251f] px-5 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#17362d] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {saved ? (
+            <Check size={18} />
+          ) : (
+            <Save size={18} />
+          )}
+
+          {saving
+            ? "Saving..."
+            : saved
+              ? "Changes Saved"
+              : "Save Changes"}
+        </button>
+      </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-200 border-t-[#d8a83e]" />
+
+          <p className="text-sm font-medium text-slate-600">
+            Loading SmartMine settings...
+          </p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
+          <div>
+            <p className="text-sm font-semibold text-red-700">
+              Settings Error
+            </p>
+
+            <p className="mt-1 text-xs text-red-600">
+              {error}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setError("")}
+            className="text-xs font-semibold text-red-600 hover:text-red-800"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Live Date & Time */}
+      <div className="mb-6 grid gap-4 md:grid-cols-2">
+        <div className="relative overflow-hidden rounded-2xl bg-[#10251f] p-6 text-white shadow-lg">
+          <div className="absolute -right-12 -top-12 h-36 w-36 rounded-full bg-[#d8a83e]/10" />
+
+          <div className="absolute -bottom-16 right-20 h-40 w-40 rounded-full bg-white/5" />
+
+          <div className="relative flex items-center justify-between">
+            <div>
+              <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-white/50">
+                <Clock3 size={15} />
+                Current Mine Time
+              </div>
+
+              <p className="text-3xl font-bold tracking-tight">
+                {formatTime()}
+              </p>
+
+              <p className="mt-2 text-sm text-white/55">
+                {getTimezoneShortLabel(
+                  settings.timezone,
+                )}
+              </p>
+            </div>
+
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#d8a83e] text-[#10251f] shadow-lg">
+              <Clock3 size={27} />
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+            <CalendarDays size={15} />
+            Today&apos;s Date
+          </div>
+
+          <p className="text-xl font-bold text-[#10251f]">
+            {formatDate()}
+          </p>
+
+          <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
+            <Globe2 size={16} />
+
+            <span>
+              Timezone:{" "}
+              {getTimezoneLabel(settings.timezone)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Settings Layout */}
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        {/* Settings Navigation */}
+        <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+          <div className="px-3 pb-3 pt-2">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+              Settings Menu
+            </p>
+          </div>
+
+          <div className="space-y-1">
+            {sections.map((section) => {
+              const Icon = section.icon;
+
+              const active =
+                activeSection === section.label;
+
+              return (
+                <button
+                  key={section.label}
+                  type="button"
+                  onClick={() =>
+                    setActiveSection(
+                      section.label,
+                    )
+                  }
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition ${
+                    active
+                      ? "bg-[#10251f] text-white shadow-md"
+                      : "text-slate-600 hover:bg-slate-50 hover:text-[#10251f]"
+                  }`}
+                >
+                  <div
+                    className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                      active
+                        ? "bg-[#d8a83e] text-[#10251f]"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    <Icon size={17} />
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold">
+                      {section.label}
+                    </p>
+
+                    <p
+                      className={`mt-0.5 truncate text-[11px] ${
+                        active
+                          ? "text-white/50"
+                          : "text-slate-400"
+                      }`}
+                    >
+                      {section.description}
+                    </p>
+                  </div>
+
+                  {active && (
+                    <ChevronRight size={16} />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* System Status */}
+          <div className="mt-4 rounded-xl bg-slate-50 p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                <Zap size={15} />
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-slate-700">
+                  System Status
+                </p>
+
+                <p className="text-[10px] text-slate-400">
+                  SmartMine is operational
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              All systems operational
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Settings */}
+        <main>
+          {activeSection === "General" && (
+            <GeneralSettings
+              settings={settings}
+              setSettings={setSettings}
+            />
+          )}
+
+          {activeSection === "Mine" && (
+            <MineSettings
+              settings={settings}
+              setSettings={setSettings}
+            />
+          )}
+
+          {activeSection === "Notifications" && (
+            <NotificationSettings
+              notifications={notifications}
+              setNotifications={setNotifications}
+            />
+          )}
+
+          {activeSection === "Security" && (
+            <SecuritySettings
+              settings={settings}
+              setSettings={setSettings}
+            />
+          )}
+
+          {activeSection === "System" && (
+            <SystemSettings
+              settings={settings}
+              setSettings={setSettings}
+            />
+          )}
+
+          {activeSection === "About" && (
+            <AboutSmartMine />
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* GENERAL SETTINGS                                                           */
+/* -------------------------------------------------------------------------- */
+
+function GeneralSettings({
+  settings,
+  setSettings,
+}: {
+  settings: ApiSettings;
+  setSettings: Dispatch<SetStateAction<ApiSettings>>;
+}) {
+  const getCurrencySymbol = (currency: string): string => {
+    switch (currency) {
+      case "ZAR":
+        return "R";
+      case "USD":
+        return "$";
+      default:
+        return currency;
+    }
+  };
+
+  const getCurrencyLabel = (currency: string): string => {
+    const option = CURRENCY_OPTIONS.find((item) => item.value === currency);
+    return option?.label ?? currency;
+  };
+
+  return (
+    <SettingsCard
+      icon={SlidersHorizontal}
+      title="General Preferences"
+      description="Control how SmartMine displays information across the platform."
+    >
+      <div className="grid gap-5 md:grid-cols-2">
+        <SelectField
+          label="Language"
+          value={settings.language}
+          onChange={(value: string) =>
+            setSettings((prev) => ({
+              ...prev,
+              language: value,
+            }))
+          }
+          options={[
+            {
+              label: "English",
+              value: "English",
+            },
+          ]}
+        />
+
+        <SelectField
+          label="Currency"
+          value={settings.currency}
+          onChange={(value: string) =>
+            setSettings((prev) => ({
+              ...prev,
+              currency: value,
+            }))
+          }
+          options={CURRENCY_OPTIONS}
+        />
+
+        <SelectField
+          label="Date Format"
+          value={settings.dateFormat}
+          onChange={(value: string) =>
+            setSettings((prev) => ({
+              ...prev,
+              dateFormat: value,
+            }))
+          }
+          options={[
+            {
+              label: "DD/MM/YYYY",
+              value: "DD/MM/YYYY",
+            },
+            {
+              label: "MM/DD/YYYY",
+              value: "MM/DD/YYYY",
+            },
+            {
+              label: "YYYY-MM-DD",
+              value: "YYYY-MM-DD",
+            },
+          ]}
+        />
+
+        <SelectField
+          label="Temperature Unit"
+          value={settings.temperatureUnit}
+          onChange={(value: string) =>
+            setSettings((prev) => ({
+              ...prev,
+              temperatureUnit: value,
+            }))
+          }
+          options={[
+            {
+              label: "Celsius",
+              value: "Celsius",
+            },
+            {
+              label: "Fahrenheit",
+              value: "Fahrenheit",
+            },
+          ]}
+        />
+
+        <SelectField
+          label="Production Unit"
+          value={settings.productionUnit}
+          onChange={(value: string) =>
+            setSettings((prev) => ({
+              ...prev,
+              productionUnit: value,
+            }))
+          }
+          options={[
+            {
+              label: "Tonnes",
+              value: "Tonnes",
+            },
+            {
+              label: "Kilograms",
+              value: "Kilograms",
+            },
+          ]}
+        />
+      </div>
+
+      <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50 p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-[#10251f]">
+              Current Currency
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              SmartMine financial values will use{" "}
+              {getCurrencyLabel(settings.currency)}.
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-[#10251f] px-4 py-2 text-sm font-bold text-[#d8a83e]">
+            {getCurrencySymbol(settings.currency)}{" "}
+            {settings.currency}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 border-t border-slate-100 pt-5">
+        <ToggleRow
+          title="Compact Mode"
+          description="Use a denser interface when working with large operational datasets."
+          enabled={settings.compactMode}
+          onChange={(value: boolean) =>
+            setSettings((prev) => ({
+              ...prev,
+              compactMode: value,
+            }))
+          }
+        />
+      </div>
+    </SettingsCard>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* MINE SETTINGS                                                              */
+/* -------------------------------------------------------------------------- */
+
+function MineSettings({
+  settings,
+  setSettings,
+}: {
+  settings: ApiSettings;
+  setSettings: Dispatch<SetStateAction<ApiSettings>>;
+}) {
+  const handleTimezoneChange = (
+    timezone: string,
+  ): void => {
+    setSettings((prev) => {
+      if (timezone === "Africa/Johannesburg") {
+        return {
+          ...prev,
+          location: "South Africa",
+          timezone,
+          currency: "ZAR",
+        };
+      }
+
+      if (timezone === "Africa/Harare") {
+        return {
+          ...prev,
+          location: "Zimbabwe",
+          timezone,
+          currency: "USD",
+        };
+      }
+
+      return {
+        ...prev,
+        timezone,
+      };
+    });
+  };
+
+  return (
+    <SettingsCard
+      icon={Building2}
+      title="Mine Information"
+      description="Manage the basic information used throughout SmartMine."
+    >
+      <div className="mb-6 flex items-center gap-4 rounded-2xl bg-[#10251f] p-5 text-white">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#d8a83e] text-[#10251f]">
+          <HardHat size={24} />
+        </div>
+
+        <div>
+          <p className="text-sm font-bold">
+            Mine Profile
+          </p>
+
+          <p className="mt-1 text-xs text-white/50">
+            This information identifies your operation within SmartMine.
+          </p>
+        </div>
+      </div>
+
+      <div className="grid gap-5 md:grid-cols-2">
+        <InputField
+          label="Mine / Operation Name"
+          value={settings.mineName}
+          onChange={(value: string) =>
+            setSettings((prev) => ({
+              ...prev,
+              mineName: value,
+            }))
+          }
+        />
+
+        <InputField
+          label="Country / Location"
+          value={settings.location}
+          onChange={(value: string) =>
+            setSettings((prev) => ({
+              ...prev,
+              location: value,
+            }))
+          }
+        />
+
+        <SelectField
+          label="Timezone"
+          value={settings.timezone}
+          onChange={handleTimezoneChange}
+          options={TIMEZONE_OPTIONS}
+        />
+      </div>
+    </SettingsCard>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* NOTIFICATION SETTINGS                                                      */
+/* -------------------------------------------------------------------------- */
+
+function NotificationSettings({
+  notifications,
+  setNotifications,
+}: {
+  notifications: ApiNotificationSettings;
+  setNotifications: Dispatch<
+    SetStateAction<ApiNotificationSettings>
+  >;
+}) {
+  const rows: Array<{
+    key: keyof ApiNotificationSettings;
+    title: string;
+    description: string;
+  }> = [
+    {
+      key: "production",
+      title: "Production Alerts",
+      description:
+        "Receive alerts when production falls behind target.",
+    },
+    {
+      key: "equipment",
+      title: "Equipment Alerts",
+      description:
+        "Receive equipment availability and downtime notifications.",
+    },
+    {
+      key: "safety",
+      title: "Safety Alerts",
+      description:
+        "Receive notifications for incidents and high-risk issues.",
+    },
+    {
+      key: "inventory",
+      title: "Inventory Alerts",
+      description:
+        "Receive warnings for critical or low stock levels.",
+    },
+    {
+      key: "finance",
+      title: "Finance Alerts",
+      description:
+        "Receive important financial and expense notifications.",
+    },
+  ];
+
+  return (
+    <SettingsCard
+      icon={Bell}
+      title="Notification Preferences"
+      description="Choose which operational events should generate alerts."
+    >
+      <div className="space-y-2">
+        {rows.map((row) => (
+          <ToggleRow
+            key={row.key}
+            title={row.title}
+            description={row.description}
+            enabled={notifications[row.key]}
+            onChange={(value: boolean) =>
+              setNotifications((prev) => ({
+                ...prev,
+                [row.key]: value,
+              }))
+            }
+          />
+        ))}
+      </div>
+
+      <div className="mt-6 rounded-xl border border-amber-100 bg-amber-50 p-4">
+        <div className="flex gap-3">
+          <Bell
+            className="mt-0.5 shrink-0 text-[#d8a83e]"
+            size={18}
+          />
+
+          <div>
+            <p className="text-sm font-semibold text-[#10251f]">
+              Safety notifications are recommended
+            </p>
+
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Safety-related notifications help management respond quickly to
+              incidents, inspections and corrective actions.
+            </p>
+          </div>
+        </div>
+      </div>
+    </SettingsCard>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* SECURITY SETTINGS                                                          */
+/* -------------------------------------------------------------------------- */
+
+function SecuritySettings({
+  settings,
+  setSettings,
+}: {
+  settings: ApiSettings;
+  setSettings: Dispatch<SetStateAction<ApiSettings>>;
+}) {
+  return (
+    <SettingsCard
+      icon={ShieldCheck}
+      title="Security & Account"
+      description="Manage security controls for your SmartMine account."
+    >
+      <div className="rounded-2xl bg-slate-50 p-5">
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[#10251f] shadow-sm">
+            <UserRound size={23} />
+          </div>
+
+          <div>
+            <p className="font-semibold text-[#10251f]">
+              Mine Admin
+            </p>
+
+            <p className="text-sm text-slate-500">
+              Operations Manager
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 space-y-2">
+        <ToggleRow
+          title="Two-Factor Authentication"
+          description="Add an additional security layer to the account."
+          enabled={settings.twoFactor}
+          onChange={(value: boolean) =>
+            setSettings((prev) => ({
+              ...prev,
+              twoFactor: value,
+            }))
+          }
+        />
+
+        <ToggleRow
+          title="Security Email Alerts"
+          description="Receive notifications about important account activity."
+          enabled={settings.emailAlerts}
+          onChange={(value: boolean) =>
+            setSettings((prev) => ({
+              ...prev,
+              emailAlerts: value,
+            }))
+          }
+        />
+      </div>
+
+      <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
+        <div className="flex items-start gap-3">
+          <LockKeyhole
+            size={18}
+            className="mt-0.5 text-[#10251f]"
+          />
+
+          <div>
+            <p className="text-sm font-semibold text-[#10251f]">
+              Account Security
+            </p>
+
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              SmartMine security settings can be connected to your
+              authentication system when the backend account management layer
+              is enabled.
+            </p>
+          </div>
+        </div>
+      </div>
+    </SettingsCard>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* SYSTEM SETTINGS                                                            */
+/* -------------------------------------------------------------------------- */
+
+function SystemSettings({
+  settings,
+  setSettings,
+}: {
+  settings: ApiSettings;
+  setSettings: Dispatch<SetStateAction<ApiSettings>>;
+}) {
+  const handleTimezoneChange = (
+    timezone: string,
+  ): void => {
+    setSettings((prev) => {
+      if (timezone === "Africa/Johannesburg") {
+        return {
+          ...prev,
+          location: "South Africa",
+          timezone,
+          currency: "ZAR",
+        };
+      }
+
+      if (timezone === "Africa/Harare") {
+        return {
+          ...prev,
+          location: "Zimbabwe",
+          timezone,
+          currency: "USD",
+        };
+      }
+
+      return {
+        ...prev,
+        timezone,
+      };
+    });
+  };
+
+  const getTimezoneLabel = (timezone: string): string => {
+    const option = TIMEZONE_OPTIONS.find((item) => item.value === timezone);
+    return option?.label ?? timezone;
+  };
+
+  const getCurrencySymbol = (currency: string): string => {
+    switch (currency) {
+      case "ZAR":
+        return "R";
+      case "USD":
+        return "$";
+      default:
+        return currency;
+    }
+  };
+
+  return (
+    <SettingsCard
+      icon={MonitorCog}
+      title="System Configuration"
+      description="System-level settings used by the SmartMine platform."
+    >
+      <div className="grid gap-5 md:grid-cols-2">
+        <SelectField
+          label="System Timezone"
+          value={settings.timezone}
+          onChange={handleTimezoneChange}
+          options={TIMEZONE_OPTIONS}
+        />
+
+        <SelectField
+          label="System Currency"
+          value={settings.currency}
+          onChange={(value: string) =>
+            setSettings((prev) => ({
+              ...prev,
+              currency: value,
+            }))
+          }
+          options={CURRENCY_OPTIONS}
+        />
+
+        <div>
+          <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500">
+            System Environment
+          </label>
+
+          <div className="flex h-11 items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+
+            <span className="text-sm font-semibold text-slate-700">
+              Operational
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+              Active Regional Configuration
+            </p>
+
+            <p className="mt-1 text-sm font-semibold text-[#10251f]">
+              {getTimezoneLabel(settings.timezone)}
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-[#10251f] px-4 py-2 text-sm font-bold text-[#d8a83e]">
+            {getCurrencySymbol(settings.currency)}{" "}
+            {settings.currency}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <SystemMetric
+          label="Platform"
+          value="SmartMine"
+        />
+
+        <SystemMetric
+          label="Version"
+          value="1.0.0"
+        />
+
+        <SystemMetric
+          label="Environment"
+          value="Production"
+        />
+      </div>
+    </SettingsCard>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* ABOUT SMARTMINE                                                            */
+/* -------------------------------------------------------------------------- */
+
+function AboutSmartMine() {
+  const modules: string[] = [
+    "Mine Operations",
+    "Processing",
+    "Equipment",
+    "Workforce",
+    "Inventory",
+    "Fuel",
+    "Safety",
+    "Finance",
+    "Sales",
+    "Reports",
+    "Smart Intelligence",
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="relative overflow-hidden rounded-3xl bg-[#10251f] p-7 text-white shadow-xl">
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#d8a83e]/10" />
+
+        <div className="absolute -bottom-24 left-1/2 h-64 w-64 rounded-full bg-white/5" />
+
+        <div className="relative">
+          <div className="mb-5 flex items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#d8a83e] text-[#10251f] shadow-lg">
+              <HardHat size={31} />
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl font-bold">
+                  SmartMine
+                </h2>
+
+                <span className="rounded-full bg-emerald-400/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-300">
+                  v1.0.0
+                </span>
+              </div>
+
+              <p className="mt-1 text-xs text-white/50">
+                Enterprise Mining Management & Intelligence System
+              </p>
+            </div>
+          </div>
+
+          <p className="max-w-2xl text-sm leading-relaxed text-slate-300">
+            SmartMine is an integrated operational platform engineered for modern mining enterprises.
+            It provides unified tracking for production, fuel usage, equipment health, workforce shifts, inventory, and finance.
+          </p>
+        </div>
+      </div>
+
+      <SettingsCard
+        icon={Info}
+        title="Active Platform Modules"
+        description="Core operational components enabled on this system instance."
+      >
+        <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+          {modules.map((mod) => (
+            <div
+              key={mod}
+              className="flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50 p-3 text-[#10251f]"
+            >
+              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                <Check size={14} />
+              </div>
+
+              <span className="text-xs font-semibold">{mod}</span>
+            </div>
+          ))}
+        </div>
+      </SettingsCard>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* REUSABLE UI HELPERS                                                        */
+/* -------------------------------------------------------------------------- */
+
+function SettingsCard({
+  icon: Icon,
+  title,
+  description,
+  children,
+}: {
+  icon: typeof SlidersHorizontal;
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="mb-6 flex items-start gap-4 border-b border-slate-100 pb-5">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#d8a83e]/10 text-[#d8a83e]">
+          <Icon size={20} />
+        </div>
+
+        <div>
+          <h2 className="text-lg font-bold text-[#10251f]">{title}</h2>
+          <p className="mt-0.5 text-xs text-slate-500">{description}</p>
+        </div>
+      </div>
+
+      {children}
+    </div>
+  );
+}
+
+function InputField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500">
+        {label}
+      </label>
+
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-[#d8a83e] focus:bg-white"
+      />
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: SelectOption[];
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-500">
+        {label}
+      </label>
+
+      <div className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 pl-3 pr-10 text-sm font-medium text-slate-700 outline-none transition focus:border-[#d8a83e] focus:bg-white"
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+
+        <ChevronDown
+          size={16}
+          className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+        />
+      </div>
+    </div>
+  );
+}
+
+function ToggleRow({
+  title,
+  description,
+  enabled,
+  onChange,
+}: {
+  title: string;
+  description: string;
+  enabled: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-3">
+      <div>
+        <p className="text-sm font-semibold text-[#10251f]">{title}</p>
+        <p className="mt-0.5 text-xs text-slate-500">{description}</p>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onChange(!enabled)}
+        className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+          enabled ? "bg-[#10251f]" : "bg-slate-200"
+        }`}
+      >
+        <span
+          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+            enabled ? "translate-x-5" : "translate-x-0"
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
+function SystemMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+        {label}
+      </p>
+
+      <p className="mt-1 text-sm font-bold text-[#10251f]">{value}</p>
+    </div>
+  );
+}

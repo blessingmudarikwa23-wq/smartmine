@@ -1,0 +1,487 @@
+import { FormEvent, useState } from "react";
+import {
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  Factory,
+  Hammer,
+  X,
+} from "lucide-react";
+
+type ProductionRecord = {
+  id: number;
+  date: string;
+  shift: string;
+  extracted: number;
+  processed: number;
+  output: number;
+  operatingHours: number;
+  downtime: number;
+  status: "Completed" | "In Progress" | "Delayed";
+  notes?: string | null;
+};
+
+type RecordProductionModalProps = {
+  onClose: () => void;
+  onSubmit: (record: ProductionRecord) => void;
+};
+
+function RecordProductionModal({
+  onClose,
+  onSubmit,
+}: RecordProductionModalProps) {
+  const [date, setDate] = useState("2026-09-03");
+  const [shift, setShift] = useState("Day Shift");
+  const [extracted, setExtracted] = useState("");
+  const [processed, setProcessed] = useState("");
+  const [output, setOutput] = useState("");
+  const [operatingHours, setOperatingHours] =
+    useState("");
+  const [downtime, setDowntime] = useState("");
+  const [status, setStatus] =
+    useState<ProductionRecord["status"]>("In Progress");
+
+  const [notes, setNotes] = useState("");
+
+  const [error, setError] = useState("");
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    setError("");
+
+    const extractedValue = Number(extracted);
+    const processedValue = Number(processed);
+    const outputValue = Number(output);
+    const operatingHoursValue = Number(operatingHours);
+    const downtimeValue = Number(downtime || 0);
+
+    if (
+      !date ||
+      !shift ||
+      !extracted ||
+      !processed ||
+      !output ||
+      !operatingHours
+    ) {
+      setError(
+        "Please complete all required production fields.",
+      );
+      return;
+    }
+
+    if (
+      !Number.isFinite(extractedValue) ||
+      !Number.isFinite(processedValue) ||
+      !Number.isFinite(outputValue) ||
+      !Number.isFinite(operatingHoursValue) ||
+      !Number.isFinite(downtimeValue)
+    ) {
+      setError(
+        "Please enter valid production values.",
+      );
+      return;
+    }
+
+    if (
+      extractedValue < 0 ||
+      processedValue < 0 ||
+      outputValue < 0 ||
+      operatingHoursValue < 0 ||
+      downtimeValue < 0
+    ) {
+      setError(
+        "Production values cannot be negative.",
+      );
+      return;
+    }
+
+    if (processedValue > extractedValue) {
+      setError(
+        "Processed material cannot exceed extracted material.",
+      );
+      return;
+    }
+
+    if (downtimeValue > operatingHoursValue) {
+      setError(
+        "Downtime cannot be greater than operating hours.",
+      );
+      return;
+    }
+
+    const newRecord: ProductionRecord = {
+      id: Date.now(),
+
+      // IMPORTANT:
+      // Send the ISO date directly to the backend.
+      // Do NOT convert it to "03 Sep 2026".
+      date,
+
+      shift,
+      extracted: extractedValue,
+      processed: processedValue,
+      output: outputValue,
+      operatingHours: operatingHoursValue,
+      downtime: downtimeValue,
+      status,
+      notes: notes.trim() || null,
+    };
+
+    console.log("Production record payload:", newRecord);
+
+    onSubmit(newRecord);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[#06120e]/70 p-4 backdrop-blur-sm">
+      <div className="relative my-8 w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+        {/* HEADER */}
+        <div className="bg-[#10251f] px-6 py-5 sm:px-7">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#d8a83e] text-[#10251f]">
+                <Factory size={21} />
+              </div>
+
+              <div>
+                <h2 className="text-lg font-bold text-white">
+                  Record Production
+                </h2>
+
+                <p className="mt-1 text-xs text-white/55">
+                  Capture today's mine production activity.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-white/60 transition hover:bg-white/10 hover:text-white"
+              aria-label="Close modal"
+            >
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* FORM */}
+        <form onSubmit={handleSubmit}>
+          <div className="max-h-[70vh] overflow-y-auto p-6 sm:p-7">
+            {error && (
+              <div className="mb-5 flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4">
+                <div className="mt-0.5 text-rose-600">
+                  <X size={17} />
+                </div>
+
+                <div>
+                  <p className="text-sm font-bold text-rose-800">
+                    Unable to save record
+                  </p>
+
+                  <p className="mt-1 text-xs text-rose-700">
+                    {error}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* BASIC INFORMATION */}
+            <div>
+              <div className="mb-4 flex items-center gap-2">
+                <CalendarDays
+                  size={17}
+                  className="text-[#a87816]"
+                />
+
+                <h3 className="text-sm font-bold text-slate-900">
+                  Production Information
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {/* DATE */}
+                <div>
+                  <label
+                    htmlFor="production-date"
+                    className="mb-1.5 block text-xs font-semibold text-slate-600"
+                  >
+                    Production Date *
+                  </label>
+
+                  <input
+                    id="production-date"
+                    type="date"
+                    value={date}
+                    onChange={(event) =>
+                      setDate(event.target.value)
+                    }
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-700 outline-none transition focus:border-[#d8a83e] focus:ring-2 focus:ring-[#d8a83e]/20"
+                  />
+                </div>
+
+                {/* SHIFT */}
+                <div>
+                  <label
+                    htmlFor="production-shift"
+                    className="mb-1.5 block text-xs font-semibold text-slate-600"
+                  >
+                    Shift *
+                  </label>
+
+                  <select
+                    id="production-shift"
+                    value={shift}
+                    onChange={(event) =>
+                      setShift(event.target.value)
+                    }
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-700 outline-none transition focus:border-[#d8a83e] focus:ring-2 focus:ring-[#d8a83e]/20"
+                  >
+                    <option>Day Shift</option>
+                    <option>Night Shift</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* MATERIAL */}
+            <div className="mt-7">
+              <div className="mb-4 flex items-center gap-2">
+                <Hammer
+                  size={17}
+                  className="text-[#a87816]"
+                />
+
+                <h3 className="text-sm font-bold text-slate-900">
+                  Material & Production
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {/* EXTRACTED */}
+                <div>
+                  <label
+                    htmlFor="material-extracted"
+                    className="mb-1.5 block text-xs font-semibold text-slate-600"
+                  >
+                    Material Extracted (t) *
+                  </label>
+
+                  <input
+                    id="material-extracted"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    placeholder="e.g. 45"
+                    value={extracted}
+                    onChange={(event) =>
+                      setExtracted(event.target.value)
+                    }
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-[#d8a83e] focus:ring-2 focus:ring-[#d8a83e]/20"
+                  />
+                </div>
+
+                {/* PROCESSED */}
+                <div>
+                  <label
+                    htmlFor="material-processed"
+                    className="mb-1.5 block text-xs font-semibold text-slate-600"
+                  >
+                    Material Processed (t) *
+                  </label>
+
+                  <input
+                    id="material-processed"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    placeholder="e.g. 38"
+                    value={processed}
+                    onChange={(event) =>
+                      setProcessed(event.target.value)
+                    }
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-[#d8a83e] focus:ring-2 focus:ring-[#d8a83e]/20"
+                  />
+                </div>
+
+                {/* OUTPUT */}
+                <div>
+                  <label
+                    htmlFor="production-output"
+                    className="mb-1.5 block text-xs font-semibold text-slate-600"
+                  >
+                    Production Output (kg) *
+                  </label>
+
+                  <input
+                    id="production-output"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    placeholder="e.g. 12.5"
+                    value={output}
+                    onChange={(event) =>
+                      setOutput(event.target.value)
+                    }
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-[#d8a83e] focus:ring-2 focus:ring-[#d8a83e]/20"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* TIME */}
+            <div className="mt-7">
+              <div className="mb-4 flex items-center gap-2">
+                <Clock3
+                  size={17}
+                  className="text-[#a87816]"
+                />
+
+                <h3 className="text-sm font-bold text-slate-900">
+                  Operating Time
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="operating-hours"
+                    className="mb-1.5 block text-xs font-semibold text-slate-600"
+                  >
+                    Operating Hours *
+                  </label>
+
+                  <input
+                    id="operating-hours"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    placeholder="e.g. 8.5"
+                    value={operatingHours}
+                    onChange={(event) =>
+                      setOperatingHours(event.target.value)
+                    }
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-[#d8a83e] focus:ring-2 focus:ring-[#d8a83e]/20"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="downtime"
+                    className="mb-1.5 block text-xs font-semibold text-slate-600"
+                  >
+                    Downtime Hours
+                  </label>
+
+                  <input
+                    id="downtime"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    placeholder="e.g. 1.5"
+                    value={downtime}
+                    onChange={(event) =>
+                      setDowntime(event.target.value)
+                    }
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-[#d8a83e] focus:ring-2 focus:ring-[#d8a83e]/20"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* STATUS */}
+            <div className="mt-7">
+              <label
+                htmlFor="production-status"
+                className="mb-1.5 block text-xs font-semibold text-slate-600"
+              >
+                Production Status
+              </label>
+
+              <select
+                id="production-status"
+                value={status}
+                onChange={(event) =>
+                  setStatus(
+                    event.target
+                      .value as ProductionRecord["status"],
+                  )
+                }
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-700 outline-none transition focus:border-[#d8a83e] focus:ring-2 focus:ring-[#d8a83e]/20"
+              >
+                <option value="In Progress">
+                  In Progress
+                </option>
+
+                <option value="Completed">
+                  Completed
+                </option>
+
+                <option value="Delayed">
+                  Delayed
+                </option>
+              </select>
+            </div>
+
+            {/* NOTES */}
+            <div className="mt-7">
+              <label
+                htmlFor="production-notes"
+                className="mb-1.5 block text-xs font-semibold text-slate-600"
+              >
+                Operations Notes
+              </label>
+
+              <textarea
+                id="production-notes"
+                rows={4}
+                placeholder="Add any relevant production notes, problems or observations..."
+                value={notes}
+                onChange={(event) =>
+                  setNotes(event.target.value)
+                }
+                className="w-full resize-none rounded-xl border border-slate-200 px-3.5 py-3 text-sm text-slate-700 outline-none transition placeholder:text-slate-300 focus:border-[#d8a83e] focus:ring-2 focus:ring-[#d8a83e]/20"
+              />
+            </div>
+
+            {/* INFO */}
+            <div className="mt-6 flex items-start gap-3 rounded-xl border border-[#d8a83e]/20 bg-[#d8a83e]/5 p-4">
+              <CheckCircle2
+                size={17}
+                className="mt-0.5 shrink-0 text-[#a87816]"
+              />
+
+              <p className="text-xs leading-5 text-slate-600">
+                Production records will be used to track daily mine
+                performance, production targets, processing efficiency
+                and operational trends.
+              </p>
+            </div>
+          </div>
+
+          {/* FOOTER */}
+          <div className="flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50 px-6 py-4 sm:flex-row sm:justify-end sm:px-7">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#10251f] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#18372e]"
+            >
+              <CheckCircle2 size={17} />
+              Save Production Record
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default RecordProductionModal;

@@ -1,0 +1,50 @@
+# =========================
+# SmartMine Git Ignore
+# =========================
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Python testing / tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Node dependencies
+node_modules/
+frontend/node_modules/
+
+# Frontend build files
+frontend/dist/
+frontend/build/
+frontend/.vite/
+
+# IDE
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+Thumbs.db
